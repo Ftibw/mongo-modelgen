@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.ftibw</groupId>
+    <artifactId>mongo-modelgen</artifactId>
+    <version>1.0</version>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <!--
+                    我们在开发完进行编译，很快会在控制台发现这行错误
+                    服务配置文件不正确, 或构造处理程序对象javax.annotation.processing.Processor: XXX could not be instantiated: java.lang.NoClassDefFoundError: XXX 时抛出异常错误
+                    为什么呢？因为注解处理器在启动的时候，注解处理器本身还没有编译，所以找不到
+
+                    怎么才能解决这个“鸡生蛋，蛋生鸡”的问题呢？
+                    第一，把这个类拆到单独的Jar包里面，不要让它干扰到需要扫描的项目里。
+                    第二，在这个单独的项目里，引入声明，表示，这个项目不要用注解处理器扫描。配置如下executions:
+                    http://maven.apache.org/plugins/maven-compiler-plugin/compile-mojo.html <proc>
+                    none - no annotation processing is performed
+                    -->
+                    <proc>none</proc>
+                </configuration>
+            </plugin>
+            <!-- 打源码包 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <configuration>
+                    <attach>true</attach>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <!--     annotation processor maven 编译配置参考（仅供参考，本身无效）      -->
+    <!--<plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+            <source>1.8</source>
+            <target>1.8</target>
+        </configuration>
+        &lt;!&ndash; https://maven.apache.org/plugins/maven-compiler-plugin/examples/module-info.html &ndash;&gt;
+        <executions>
+            <execution>
+                <id>default-compile</id>
+                <configuration>
+                    <generatedSourcesDirectory>${project.basedir}/src/main/metamodel</generatedSourcesDirectory>
+                    <compilerArgs>
+                        <arg>-Adebug=true</arg>
+                        <arg>-AgenerateMode=metaModel</arg>
+                    </compilerArgs>
+                </configuration>
+            </execution>
+            <execution>
+                <id>base-compile</id>
+                <goals>
+                    <goal>compile</goal>
+                </goals>
+                &lt;!&ndash; recompile &ndash;&gt;
+                <configuration>
+                    <generatedSourcesDirectory>${project.basedir}/target/generated-sources/annotations</generatedSourcesDirectory>
+                    <compilerArgs>
+                        <arg>-Adebug=true</arg>
+                        <arg>-AgenerateMode=dtoModel</arg>
+                    </compilerArgs>
+                    <excludes>
+                        <exclude>**/com/greentown/poststation/entity/*_.java</exclude>
+                    </excludes>
+                </configuration>
+            </execution>
+        </executions>
+    </plugin>-->
+
+</project>
