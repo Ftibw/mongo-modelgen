@@ -96,11 +96,16 @@ public class MongoModelEntityProcessor extends AbstractProcessor {
 
         for (MetaEntity entity : context.getMetaEntities()) {
 
+            if (superclassNotCompiling(entity.getTypeElement())) {
+                context.logMessage(Diagnostic.Kind.NOTE, "Need Superclass not be compiling for entity " + entity.getQualifiedName());
+                return ALLOW_OTHER_PROCESSORS_TO_CLAIM_ANNOTATIONS;
+            }
+
             if (entity.getTypeElement().getAnnotation(Specs.class) == null) {
                 continue;
             }
-            Element superElement = ClassWriter.findMappedSuperElement(entity, context);
 
+            Element superElement = ClassWriter.findMappedSuperElement(entity, context);
             DtoSpec.buildDtoSpecifications(entity, superElement);
         }
 
@@ -108,12 +113,20 @@ public class MongoModelEntityProcessor extends AbstractProcessor {
         return ALLOW_OTHER_PROCESSORS_TO_CLAIM_ANNOTATIONS;
     }
 
+    private static boolean superclassNotCompiling(TypeElement element) {
+        TypeMirror superclass = element.getSuperclass();
+        if (superclass.toString().endsWith(Constants.QUALIFIED_SUPER_ENTITY_SUFFIX)) {
+            return superclass.getAnnotationMirrors().isEmpty();
+        }
+        return false;
+    }
+
     private void createMetaModelClasses() {
         for (MetaEntity entity : context.getMetaEntities()) {
             if (context.isAlreadyGenerated(entity.getQualifiedName())) {
                 continue;
             }
-            context.logMessage(Diagnostic.Kind.OTHER, "Writing com.greentown.poststation.meta model for entity " + entity);
+            context.logMessage(Diagnostic.Kind.OTHER, "Writing meta model for entity " + entity);
             ClassWriter.writeFile(entity, context);
             context.markGenerated(entity.getQualifiedName());
         }
@@ -134,7 +147,7 @@ public class MongoModelEntityProcessor extends AbstractProcessor {
                     continue;
                 }
                 context.logMessage(
-                        Diagnostic.Kind.OTHER, "Writing com.greentown.poststation.meta model for embeddable/mapped superclass" + entity
+                        Diagnostic.Kind.OTHER, "Writing meta model for embeddable/mapped superclass" + entity
                 );
                 ClassWriter.writeFile(entity, context);
                 context.markGenerated(entity.getQualifiedName());

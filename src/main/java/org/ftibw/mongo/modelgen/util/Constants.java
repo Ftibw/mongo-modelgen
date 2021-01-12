@@ -24,6 +24,7 @@ public final class Constants {
      * {@link org.ftibw.mongo.modelgen.publics.MappedSuperclass}
      */
     public static final String MAPPED_SUPERCLASS = "org.ftibw.mongo.modelgen.publics.MappedSuperclass";
+    public static final String QUALIFIED_SUPER_ENTITY_SUFFIX = ".entity.SuperEntity";
 
     public static final Map<String, String> COLLECTIONS = new HashMap<>();
 

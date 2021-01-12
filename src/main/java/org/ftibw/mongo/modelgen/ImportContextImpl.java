@@ -159,7 +159,7 @@ public class ImportContextImpl implements ImportContext {
 
 	@Override
 	public SortedSet<String> getImports() {
-		return new TreeSet<>(imports);
+		return (SortedSet<String>) imports;
 	}
 
 	private boolean isAutoImported(String next) {

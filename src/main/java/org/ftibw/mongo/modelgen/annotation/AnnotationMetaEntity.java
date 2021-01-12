@@ -23,7 +23,7 @@ import javax.tools.Diagnostic;
 import java.util.*;
 
 /**
- * Class used to collect com.greentown.poststation.meta information about an annotated type (entity, embeddable or mapped superclass).
+ * Class used to collect meta information about an annotated type (entity, embeddable or mapped superclass).
  *
  * @author Max Andersen
  * @author Hardy Ferentschik
@@ -50,7 +50,7 @@ public class AnnotationMetaEntity implements MetaEntity {
     private boolean initialized;
 
     /**
-     * Another com.greentown.poststation.meta entity for the same type which should be merged lazily with this com.greentown.poststation.meta entity. Doing the merge
+     * Another meta entity for the same type which should be merged lazily with this meta entity. Doing the merge
      * lazily is required for embeddedables and mapped supertypes to only pull in those members matching the access
      * type as configured via the embedding entity or subclass (also see METAGEN-85).
      */

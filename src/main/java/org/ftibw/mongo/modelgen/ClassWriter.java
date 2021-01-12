@@ -110,11 +110,21 @@ public final class ClassWriter {
                 pw.println("package " + dtoPackage + ";");
                 pw.println();
 
+                SortedSet<String> imports = entity.getImports();
                 ImportContext importContext = new ImportContextImpl(dtoPackage);
-                for (String typeImport : entity.getImports()) {
+                for (String typeImport : imports) {
+                    if (typeImport.endsWith(META_MODEL_CLASS_NAME_SUFFIX)) {
+                        continue;
+                    }
                     importContext.importType(typeImport);
                 }
+
                 pw.println(importContext.generateImports());
+                //不同dto的导入不同，每次需要清理
+                Collection<String> dirtImports = context.getDirtImports();
+                imports.removeAll(dirtImports);
+                dirtImports.clear();
+
                 pw.println(body);
 
                 pw.flush();
@@ -184,6 +194,9 @@ public final class ClassWriter {
                 if (propertyMap.containsKey(propertyName)) {
 
                     if ("id".equals(propertyName)) {
+                        //将superClass中成员类型导入到dto中
+                        importSuperMemberType(entity, metaMember, context);
+
                         printConstraintAnnotation(entity, propertyName, dtoSpec, pw);
                         pw.println(writeApiModelPropertyAnnotation(entity, propertyName, dtoSpec));
                         pw.println("	" + metaMember.getAttributeDeclarationString());
@@ -213,6 +226,9 @@ public final class ClassWriter {
                     if ("id".equals(propertyName)) {
                         continue;
                     }
+                    //将superClass中成员类型导入到dto中
+                    importSuperMemberType(entity, metaMember, context);
+
                     printConstraintAnnotation(entity, propertyName, dtoSpec, pw);
                     pw.println(writeApiModelPropertyAnnotation(entity, propertyName, dtoSpec));
                     pw.println("	" + metaMember.getAttributeDeclarationString());
@@ -220,7 +236,7 @@ public final class ClassWriter {
                 }
             }
 
-            printDtoExtraProperties(entity, dtoSpec, pw);
+            printDtoExtraProperties(entity, dtoSpec, pw, context);
 
             pw.println();
 
@@ -231,7 +247,7 @@ public final class ClassWriter {
         }
     }
 
-    private static void printDtoExtraProperties(MetaEntity entity, DtoSpec dtoSpec, PrintWriter pw) {
+    private static void printDtoExtraProperties(MetaEntity entity, DtoSpec dtoSpec, PrintWriter pw, Context context) {
         List<DtoProp> extraProperties = dtoSpec.getExtraProperties();
         if (extraProperties == null || extraProperties.isEmpty()) {
             return;
@@ -251,12 +267,16 @@ public final class ClassWriter {
             printConstraintAnnotation(entity, propName, tmpDtoSpec, pw);
             pw.println(writeApiModelPropertyAnnotation(entity, propName, tmpDtoSpec));
 
+            Collection<String> dirtImports = context.getDirtImports();
             String typeDeclare = extra.getTypeDeclare();
             if (StringUtil.isBlank(typeDeclare)) {
-                typeDeclare = entity.importType(typeImports.get(0));
+                String typeImport = typeImports.get(0);
+                typeDeclare = entity.importType(typeImport);
+                dirtImports.add(typeImport);
             } else {
                 for (String typeImport : typeImports) {
                     entity.importType(typeImport);
+                    dirtImports.add(typeImport);
                 }
             }
             pw.println("	private " + typeDeclare + " " + propName + ";");
@@ -318,21 +338,22 @@ public final class ClassWriter {
             MetaEntity superEntity = context.getMetaEntity(superClassName);
             if (superEntity != null) {
                 members = superEntity.getMembers();
-                for (MetaAttribute member : members) {
-                    //将superClass中成员类型导入到dto中
-                    importSuperMemberType(entity, member);
-                }
             }
         }
         return members;
     }
 
     //导入属性的（集合泛型）类型
-    private static void importSuperMemberType(MetaEntity entity, MetaAttribute member) {
-        entity.importType(member.getTypeDeclaration());
+    private static void importSuperMemberType(MetaEntity entity, MetaAttribute member, Context context) {
+        String outter = member.getTypeDeclaration();
+        String inner = member.getMetaType();
+        entity.importType(outter);
         if (member instanceof MetaCollection) {
-            entity.importType(member.getMetaType());
+            entity.importType(inner);
         }
+        Collection<String> dirtImports = context.getDirtImports();
+        dirtImports.add(outter);
+        dirtImports.add(inner);
     }
 
     private static void printClassDeclaration(MetaEntity entity, PrintWriter pw, Context context) {

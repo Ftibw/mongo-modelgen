@@ -44,6 +44,8 @@ public final class Context {
     // keep track of all classes for which model have been generated
     private final Collection<String> generatedModelClasses = new HashSet<String>();
 
+    private final Collection<String> dirtImports = new HashSet<>();
+
     public Context(ProcessingEnvironment pe) {
         this.pe = pe;
         logDebug = Boolean.parseBoolean(pe.getOptions().get(MongoModelEntityProcessor.DEBUG_OPTION));
@@ -129,4 +131,7 @@ public final class Context {
         pe.getMessager().printMessage(type, message);
     }
 
+    public Collection<String> getDirtImports() {
+        return dirtImports;
+    }
 }

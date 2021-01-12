@@ -7,7 +7,7 @@
 package org.ftibw.mongo.modelgen;
 
 /**
- * {@code RuntimeException} used for errors during com.greentown.poststation.meta model generation.
+ * {@code RuntimeException} used for errors during meta model generation.
  *
  * @author Hardy Ferentschik
  */
