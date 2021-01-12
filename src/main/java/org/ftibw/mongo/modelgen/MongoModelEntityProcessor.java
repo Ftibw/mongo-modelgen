@@ -9,7 +9,10 @@ package org.ftibw.mongo.modelgen;
 import org.ftibw.mongo.modelgen.annotation.AnnotationMetaEntity;
 import org.ftibw.mongo.modelgen.model.MetaEntity;
 import org.ftibw.mongo.modelgen.publics.dto.Specs;
-import org.ftibw.mongo.modelgen.util.*;
+import org.ftibw.mongo.modelgen.util.Constants;
+import org.ftibw.mongo.modelgen.util.DtoSpec;
+import org.ftibw.mongo.modelgen.util.StringUtil;
+import org.ftibw.mongo.modelgen.util.TypeUtils;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
@@ -96,11 +99,6 @@ public class MongoModelEntityProcessor extends AbstractProcessor {
 
         for (MetaEntity entity : context.getMetaEntities()) {
 
-            if (superclassNotCompiling(entity.getTypeElement())) {
-                context.logMessage(Diagnostic.Kind.NOTE, "Need Superclass not be compiling for entity " + entity.getQualifiedName());
-                return ALLOW_OTHER_PROCESSORS_TO_CLAIM_ANNOTATIONS;
-            }
-
             if (entity.getTypeElement().getAnnotation(Specs.class) == null) {
                 continue;
             }
@@ -111,14 +109,6 @@ public class MongoModelEntityProcessor extends AbstractProcessor {
 
         createMetaModelClasses();
         return ALLOW_OTHER_PROCESSORS_TO_CLAIM_ANNOTATIONS;
-    }
-
-    private static boolean superclassNotCompiling(TypeElement element) {
-        TypeMirror superclass = element.getSuperclass();
-        if (superclass.toString().endsWith(Constants.QUALIFIED_SUPER_ENTITY_SUFFIX)) {
-            return superclass.getAnnotationMirrors().isEmpty();
-        }
-        return false;
     }
 
     private void createMetaModelClasses() {
