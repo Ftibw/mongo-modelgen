@@ -99,11 +99,20 @@ public class MongoModelEntityProcessor extends AbstractProcessor {
 
         for (MetaEntity entity : context.getMetaEntities()) {
 
+            Element superElement = ClassWriter.findMappedSuperElement(entity, context);
+            if (superElement == null) {
+                String superclass = entity.getTypeElement().getSuperclass().toString();
+
+                if (!Object.class.getName().equals(superclass)) {
+                    context.logMessage(Diagnostic.Kind.NOTE, "Superclass " + superclass +
+                            " absent of entity " + entity.getQualifiedName() + ", stop model generate");
+                    return ALLOW_OTHER_PROCESSORS_TO_CLAIM_ANNOTATIONS;
+                }
+            }
+
             if (entity.getTypeElement().getAnnotation(Specs.class) == null) {
                 continue;
             }
-
-            Element superElement = ClassWriter.findMappedSuperElement(entity, context);
             DtoSpec.buildDtoSpecifications(entity, superElement);
         }
 
