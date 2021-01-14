@@ -128,7 +128,7 @@ public class AnnotationMetaEntity implements MetaEntity {
     }
 
     @Override
-    public SortedSet<String> getImports() {
+    public Set<String> getImports() {
         return importContext.getImports();
     }
 

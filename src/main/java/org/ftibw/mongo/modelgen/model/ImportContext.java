@@ -7,7 +7,7 @@
 package org.ftibw.mongo.modelgen.model;
 
 import java.util.Collection;
-import java.util.SortedSet;
+import java.util.Set;
 
 /**
  * @author Max Andersen
@@ -34,9 +34,9 @@ public interface ImportContext {
     String generateImports();
 
     /**
-     * 获取导入集合的拷贝
+     * 获取导入
      */
-    SortedSet<String> getImports();
+    Set<String> getImports();
 
     /**
      * 清除导入

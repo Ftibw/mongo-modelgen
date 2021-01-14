@@ -158,8 +158,8 @@ public class ImportContextImpl implements ImportContext {
     }
 
     @Override
-    public SortedSet<String> getImports() {
-        return new TreeSet<>(imports);
+    public Set<String> getImports() {
+        return imports;
     }
 
     @Override
