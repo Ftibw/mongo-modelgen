@@ -6,6 +6,7 @@
  */
 package org.ftibw.mongo.modelgen.model;
 
+import java.util.Collection;
 import java.util.SortedSet;
 
 /**
@@ -32,5 +33,14 @@ public interface ImportContext {
 
     String generateImports();
 
+    /**
+     * 获取导入集合的拷贝
+     */
     SortedSet<String> getImports();
+
+    /**
+     * 清除导入
+     */
+    void clearImports(Collection<String> imports);
+
 }

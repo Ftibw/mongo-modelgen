@@ -131,7 +131,16 @@ public final class Context {
         pe.getMessager().printMessage(type, message);
     }
 
-    public Collection<String> getDirtImports() {
-        return dirtImports;
+    public void clearDirtImports(MetaEntity entity) {
+        entity.clearImports(dirtImports);
+        dirtImports.clear();
     }
+
+    public String importDirtType(MetaEntity entity, String typeImport) {
+        if (!entity.getImports().contains(typeImport)) {
+            dirtImports.add(typeImport);
+        }
+        return entity.importType(typeImport);
+    }
+
 }

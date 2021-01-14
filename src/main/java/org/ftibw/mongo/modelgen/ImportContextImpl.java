@@ -18,161 +18,168 @@ import java.util.*;
  */
 public class ImportContextImpl implements ImportContext {
 
-	private Set<String> imports = new TreeSet<String>();
-	private Set<String> staticImports = new TreeSet<String>();
-	private Map<String, String> simpleNames = new HashMap<String, String>();
+    private Set<String> imports = new TreeSet<String>();
+    private Set<String> staticImports = new TreeSet<String>();
+    private Map<String, String> simpleNames = new HashMap<String, String>();
 
-	private String basePackage = "";
+    private String basePackage = "";
 
-	private static final Map<String, String> PRIMITIVES = new HashMap<String, String>();
+    private static final Map<String, String> PRIMITIVES = new HashMap<String, String>();
 
-	static {
-		PRIMITIVES.put("char", "Character");
+    static {
+        PRIMITIVES.put("char", "Character");
 
-		PRIMITIVES.put("byte", "Byte");
-		PRIMITIVES.put("short", "Short");
-		PRIMITIVES.put("int", "Integer");
-		PRIMITIVES.put("long", "Long");
+        PRIMITIVES.put("byte", "Byte");
+        PRIMITIVES.put("short", "Short");
+        PRIMITIVES.put("int", "Integer");
+        PRIMITIVES.put("long", "Long");
 
-		PRIMITIVES.put("boolean", "Boolean");
+        PRIMITIVES.put("boolean", "Boolean");
 
-		PRIMITIVES.put("float", "Float");
-		PRIMITIVES.put("double", "Double");
+        PRIMITIVES.put("float", "Float");
+        PRIMITIVES.put("double", "Double");
 
-	}
+    }
 
-	public ImportContextImpl(String basePackage) {
-		this.basePackage = basePackage;
-	}
+    public ImportContextImpl(String basePackage) {
+        this.basePackage = basePackage;
+    }
 
-	/**
-	 * Add fqcn to the import list. Returns fqcn as needed in source code.
-	 * Attempts to handle fqcn with array and generics references.
-	 * <p/>
-	 * e.g.
-	 * java.util.Collection<org.marvel.Hulk> imports java.util.Collection and returns Collection
-	 * org.marvel.Hulk[] imports org.marvel.Hulk and returns Hulk
-	 *
-	 * @param fqcn Fully qualified class name
-	 * @return import string
-	 */
-	@Override
-	public String importType(String fqcn) {
-		String result = fqcn;
+    /**
+     * Add fqcn to the import list. Returns fqcn as needed in source code.
+     * Attempts to handle fqcn with array and generics references.
+     * <p/>
+     * e.g.
+     * java.util.Collection<org.marvel.Hulk> imports java.util.Collection and returns Collection
+     * org.marvel.Hulk[] imports org.marvel.Hulk and returns Hulk
+     *
+     * @param fqcn Fully qualified class name
+     * @return import string
+     */
+    @Override
+    public String importType(String fqcn) {
+        String result = fqcn;
 
-		//if(fqcn==null) return "/** (null) **/";
+        //if(fqcn==null) return "/** (null) **/";
 
-		String additionalTypePart = null;
-		if (fqcn.indexOf('<') >= 0) {
-			additionalTypePart = result.substring(fqcn.indexOf('<'));
-			result = result.substring(0, fqcn.indexOf('<'));
-			fqcn = result;
-		} else if (fqcn.indexOf('[') >= 0) {
-			additionalTypePart = result.substring(fqcn.indexOf('['));
-			result = result.substring(0, fqcn.indexOf('['));
-			fqcn = result;
-		}
+        String additionalTypePart = null;
+        if (fqcn.indexOf('<') >= 0) {
+            additionalTypePart = result.substring(fqcn.indexOf('<'));
+            result = result.substring(0, fqcn.indexOf('<'));
+            fqcn = result;
+        } else if (fqcn.indexOf('[') >= 0) {
+            additionalTypePart = result.substring(fqcn.indexOf('['));
+            result = result.substring(0, fqcn.indexOf('['));
+            fqcn = result;
+        }
 
-		String pureFqcn = fqcn.replace('$', '.');
+        String pureFqcn = fqcn.replace('$', '.');
 
-		boolean canBeSimple;
+        boolean canBeSimple;
 
-		String simpleName = unqualify(fqcn);
-		if (simpleNames.containsKey(simpleName)) {
-			String existingFqcn = simpleNames.get(simpleName);
-			if (existingFqcn.equals(pureFqcn)) {
-				canBeSimple = true;
-			} else {
-				canBeSimple = false;
-			}
-		} else {
-			canBeSimple = true;
-			simpleNames.put(simpleName, pureFqcn);
-			imports.add(pureFqcn);
-		}
+        String simpleName = unqualify(fqcn);
+        if (simpleNames.containsKey(simpleName)) {
+            String existingFqcn = simpleNames.get(simpleName);
+            if (existingFqcn.equals(pureFqcn)) {
+                canBeSimple = true;
+            } else {
+                canBeSimple = false;
+            }
+        } else {
+            canBeSimple = true;
+            simpleNames.put(simpleName, pureFqcn);
+            imports.add(pureFqcn);
+        }
 
 
-		if (inSamePackage(fqcn) || (imports.contains(pureFqcn) && canBeSimple)) {
-			result = unqualify(result);
-		} else if (inJavaLang(fqcn)) {
-			result = result.substring("java.lang.".length());
-		}
+        if (inSamePackage(fqcn) || (imports.contains(pureFqcn) && canBeSimple)) {
+            result = unqualify(result);
+        } else if (inJavaLang(fqcn)) {
+            result = result.substring("java.lang.".length());
+        }
 
-		if (additionalTypePart != null) {
-			result = result + additionalTypePart;
-		}
+        if (additionalTypePart != null) {
+            result = result + additionalTypePart;
+        }
 
-		result = result.replace('$', '.');
-		return result;
-	}
+        result = result.replace('$', '.');
+        return result;
+    }
 
-	@Override
-	public String staticImport(String fqcn, String member) {
-		String local = fqcn + "." + member;
-		imports.add(local);
-		staticImports.add(local);
+    @Override
+    public String staticImport(String fqcn, String member) {
+        String local = fqcn + "." + member;
+        imports.add(local);
+        staticImports.add(local);
 
-		if ("*".equals(member)) {
-			return "";
-		} else {
-			return member;
-		}
-	}
+        if ("*".equals(member)) {
+            return "";
+        } else {
+            return member;
+        }
+    }
 
-	private boolean inDefaultPackage(String className) {
-		return !className.contains(".");
-	}
+    private boolean inDefaultPackage(String className) {
+        return !className.contains(".");
+    }
 
-	private boolean isPrimitive(String className) {
-		return PRIMITIVES.containsKey(className);
-	}
+    private boolean isPrimitive(String className) {
+        return PRIMITIVES.containsKey(className);
+    }
 
-	private boolean inSamePackage(String className) {
-		String other = qualifier(className);
-		return basePackage.equals(other);
-	}
+    private boolean inSamePackage(String className) {
+        String other = qualifier(className);
+        return basePackage.equals(other);
+    }
 
-	private boolean inJavaLang(String className) {
-		return "java.lang".equals(qualifier(className));
-	}
+    private boolean inJavaLang(String className) {
+        return "java.lang".equals(qualifier(className));
+    }
 
-	@Override
-	public String generateImports() {
-		StringBuilder builder = new StringBuilder();
+    @Override
+    public String generateImports() {
+        StringBuilder builder = new StringBuilder();
 
-		for (String next : imports) {
-			// don't add automatically "imported" stuff
-			if (!isAutoImported(next)) {
-				if (staticImports.contains(next)) {
-					builder.append("import static ").append(next).append(";").append(System.lineSeparator());
-				} else {
-					builder.append("import ").append(next).append(";").append(System.lineSeparator());
-				}
-			}
-		}
+        for (String next : imports) {
+            // don't add automatically "imported" stuff
+            if (!isAutoImported(next)) {
+                if (staticImports.contains(next)) {
+                    builder.append("import static ").append(next).append(";").append(System.lineSeparator());
+                } else {
+                    builder.append("import ").append(next).append(";").append(System.lineSeparator());
+                }
+            }
+        }
 
-		if (builder.indexOf("$") >= 0) {
-			return builder.toString();
-		}
-		return builder.toString();
-	}
+        if (builder.indexOf("$") >= 0) {
+            return builder.toString();
+        }
+        return builder.toString();
+    }
 
-	@Override
-	public SortedSet<String> getImports() {
-		return (SortedSet<String>) imports;
-	}
+    @Override
+    public SortedSet<String> getImports() {
+        return new TreeSet<>(imports);
+    }
 
-	private boolean isAutoImported(String next) {
-		return isPrimitive(next) || inDefaultPackage(next) || inJavaLang(next) || inSamePackage(next);
-	}
+    @Override
+    public void clearImports(Collection<String> imports) {
+        this.imports.removeAll(imports);
+        this.simpleNames.entrySet().removeIf(e -> imports.contains(e.getValue()));
+        this.staticImports.removeAll(imports);
+    }
 
-	public static String unqualify(String qualifiedName) {
-		int loc = qualifiedName.lastIndexOf('.');
-		return (loc < 0) ? qualifiedName : qualifiedName.substring(qualifiedName.lastIndexOf('.') + 1);
-	}
+    private boolean isAutoImported(String next) {
+        return isPrimitive(next) || inDefaultPackage(next) || inJavaLang(next) || inSamePackage(next);
+    }
 
-	public static String qualifier(String qualifiedName) {
-		int loc = qualifiedName.lastIndexOf(".");
-		return (loc < 0) ? "" : qualifiedName.substring(0, loc);
-	}
+    public static String unqualify(String qualifiedName) {
+        int loc = qualifiedName.lastIndexOf('.');
+        return (loc < 0) ? qualifiedName : qualifiedName.substring(qualifiedName.lastIndexOf('.') + 1);
+    }
+
+    public static String qualifier(String qualifiedName) {
+        int loc = qualifiedName.lastIndexOf(".");
+        return (loc < 0) ? "" : qualifiedName.substring(0, loc);
+    }
 }

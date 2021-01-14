@@ -9,6 +9,10 @@ package org.ftibw.mongo.modelgen.publics.dto;
  */
 public enum Rule_ {
     /**
+     * pojo、集合、Map嵌套校验时需要此注解
+     */
+    Valid("javax.validation.Valid", null),
+    /**
      * 字符串非null且非空
      */
     NotBlank("javax.validation.constraints.NotBlank", null),
@@ -51,6 +55,13 @@ public enum Rule_ {
         return type;
     }
 
+    private boolean needPrintMessage(String msg) {
+        if (this == Valid) {
+            return false;
+        }
+        return !msg.trim().isEmpty();
+    }
+
     private static boolean isStringValueOption(Rule_ anno, String opt) {
         if (anno == Pattern) {
             return "regexp".equals(opt);
@@ -67,7 +78,7 @@ public enum Rule_ {
 
         int valLen = optValues.length;
         if (supportedOptions == null || valLen == 0) {
-            if (!msg.trim().isEmpty()) {
+            if (this.needPrintMessage(msg)) {
                 sb.append("(");
                 sb.append("message = \"").append(msg).append("\"");
                 sb.append(")");

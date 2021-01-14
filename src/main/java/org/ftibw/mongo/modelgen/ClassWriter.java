@@ -24,7 +24,10 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
 import javax.tools.FileObject;
-import java.io.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -110,9 +113,8 @@ public final class ClassWriter {
                 pw.println("package " + dtoPackage + ";");
                 pw.println();
 
-                SortedSet<String> imports = entity.getImports();
                 ImportContext importContext = new ImportContextImpl(dtoPackage);
-                for (String typeImport : imports) {
+                for (String typeImport : entity.getImports()) {
                     if (typeImport.endsWith(META_MODEL_CLASS_NAME_SUFFIX)) {
                         continue;
                     }
@@ -121,9 +123,7 @@ public final class ClassWriter {
 
                 pw.println(importContext.generateImports());
                 //不同dto的导入不同，每次需要清理
-                Collection<String> dirtImports = context.getDirtImports();
-                imports.removeAll(dirtImports);
-                dirtImports.clear();
+                context.clearDirtImports(entity);
 
                 pw.println(body);
 
@@ -267,16 +267,13 @@ public final class ClassWriter {
             printConstraintAnnotation(entity, propName, tmpDtoSpec, pw);
             pw.println(writeApiModelPropertyAnnotation(entity, propName, tmpDtoSpec));
 
-            Collection<String> dirtImports = context.getDirtImports();
             String typeDeclare = extra.getTypeDeclare();
             if (StringUtil.isBlank(typeDeclare)) {
                 String typeImport = typeImports.get(0);
-                typeDeclare = entity.importType(typeImport);
-                dirtImports.add(typeImport);
+                typeDeclare = context.importDirtType(entity, typeImport);
             } else {
                 for (String typeImport : typeImports) {
-                    entity.importType(typeImport);
-                    dirtImports.add(typeImport);
+                    context.importDirtType(entity, typeImport);
                 }
             }
             pw.println("	private " + typeDeclare + " " + propName + ";");
@@ -347,13 +344,12 @@ public final class ClassWriter {
     private static void importSuperMemberType(MetaEntity entity, MetaAttribute member, Context context) {
         String outter = member.getTypeDeclaration();
         String inner = member.getMetaType();
+
+        context.importDirtType(entity, outter);
         entity.importType(outter);
         if (member instanceof MetaCollection) {
-            entity.importType(inner);
+            context.importDirtType(entity, inner);
         }
-        Collection<String> dirtImports = context.getDirtImports();
-        dirtImports.add(outter);
-        dirtImports.add(inner);
     }
 
     private static void printClassDeclaration(MetaEntity entity, PrintWriter pw, Context context) {

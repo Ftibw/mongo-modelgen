@@ -133,6 +133,11 @@ public class AnnotationMetaEntity implements MetaEntity {
     }
 
     @Override
+    public void clearImports(Collection<String> imports) {
+        importContext.clearImports(imports);
+    }
+
+    @Override
     public final String importType(String fqcn) {
         return importContext.importType(fqcn);
     }
