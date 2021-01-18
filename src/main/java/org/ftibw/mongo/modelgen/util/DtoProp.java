@@ -14,24 +14,28 @@ public class DtoProp {
     private String typeDeclare;
     private List<String> typeImports;
     private Rule[] rules;
+    private boolean hash;
 
     public DtoProp(String propName, String descr) {
         this.propName = propName;
         this.descr = descr;
     }
 
-    public DtoProp(String propName, String descr, Rule[] rules) {
+    public DtoProp(String propName, String descr, Rule[] rules, boolean hash) {
         this.propName = propName;
         this.descr = descr;
         this.rules = rules;
+        this.hash = hash;
     }
 
-    public DtoProp(String propName, String descr, String typeDeclare, List<String> typeImports, Rule[] rules) {
+    public DtoProp(String propName, String descr, String typeDeclare, List<String> typeImports,
+                   Rule[] rules, boolean hash) {
         this.propName = propName;
         this.descr = descr;
         this.typeDeclare = typeDeclare;
         this.typeImports = typeImports;
         this.rules = rules;
+        this.hash = hash;
     }
 
     public String getPropName() {
@@ -54,4 +58,7 @@ public class DtoProp {
         return rules;
     }
 
+    public boolean isHash() {
+        return hash;
+    }
 }

@@ -37,4 +37,9 @@ public @interface Prop {
      * 属性校验规则
      */
     Rule[] rule() default {};
+
+    /**
+     * 重写hashCode和equals时是否参与计算
+     */
+    boolean hash() default false;
 }

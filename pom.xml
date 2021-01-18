@@ -6,7 +6,10 @@
     <groupId>org.ftibw</groupId>
     <artifactId>mongo-modelgen</artifactId>
     <version>1.0</version>
-
+    <!--
+    该项目一定不能与引用了生成器的项目在同一个父目录中
+    因为ide run/debug 会自动编译项目根目录下的所有子项目
+    -->
     <build>
         <plugins>
             <plugin>

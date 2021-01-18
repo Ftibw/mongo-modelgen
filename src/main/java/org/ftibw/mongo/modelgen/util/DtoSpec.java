@@ -163,8 +163,8 @@ public class DtoSpec {
                         propDescr = defaultProp.getDescr();
                     }
                 }
-                //只获取非默认属性的校验规则
-                propertyMap.put(propName, new DtoProp(propName, propDescr, prop.rule()));
+                //只获取非默认属性的【校验规则】、【是否参与hashCode计算】
+                propertyMap.put(propName, new DtoProp(propName, propDescr, prop.rule(), prop.hash()));
             }
 
             Prop[] extraProps = spec.extra();
@@ -203,7 +203,8 @@ public class DtoSpec {
                         extraProp.descr(),
                         typeDeclare,
                         typeImports,
-                        extraProp.rule()
+                        extraProp.rule(),
+                        extraProp.hash()
                 ));
             }
             if (extraProperties.size() > 0) {

@@ -191,29 +191,31 @@ public final class ClassWriter {
             for (MetaAttribute metaMember : superMembers) {
 
                 String propertyName = metaMember.getPropertyName();
-                if (propertyMap.containsKey(propertyName)) {
+                DtoProp dtoProp = propertyMap.get(propertyName);
+                if (dtoProp == null) {
+                    continue;
+                }
+                if ("id".equals(propertyName)) {
+                    //将superClass中成员类型导入到dto中
+                    importSuperMemberType(entity, metaMember, context);
 
-                    if ("id".equals(propertyName)) {
-                        //将superClass中成员类型导入到dto中
-                        importSuperMemberType(entity, metaMember, context);
-
-                        printConstraintAnnotation(entity, propertyName, dtoSpec, pw);
-                        pw.println(writeApiModelPropertyAnnotation(entity, propertyName, dtoSpec));
-                        pw.println("	" + metaMember.getAttributeDeclarationString());
-                        printedEntityPropNames.add(propertyName);
-                        break;
-                    }
+                    printConstraintAnnotation(entity, dtoProp, pw);
+                    pw.println(writeApiModelPropertyAnnotation(entity, dtoProp));
+                    pw.println("	" + metaMember.getAttributeDeclarationString());
+                    printedEntityPropNames.add(propertyName);
+                    break;
                 }
             }
 
             List<MetaAttribute> members = entity.getMembers();
             for (MetaAttribute metaMember : members) {
                 String propertyName = metaMember.getPropertyName();
-                if (!propertyMap.containsKey(propertyName)) {
+                DtoProp dtoProp = propertyMap.get(propertyName);
+                if (dtoProp == null) {
                     continue;
                 }
-                printConstraintAnnotation(entity, propertyName, dtoSpec, pw);
-                pw.println(writeApiModelPropertyAnnotation(entity, propertyName, dtoSpec));
+                printConstraintAnnotation(entity, dtoProp, pw);
+                pw.println(writeApiModelPropertyAnnotation(entity, dtoProp));
                 pw.println("	" + metaMember.getAttributeDeclarationString());
                 printedEntityPropNames.add(propertyName);
             }
@@ -221,19 +223,20 @@ public final class ClassWriter {
             for (MetaAttribute metaMember : superMembers) {
 
                 String propertyName = metaMember.getPropertyName();
-                if (propertyMap.containsKey(propertyName)) {
-
-                    if ("id".equals(propertyName)) {
-                        continue;
-                    }
-                    //将superClass中成员类型导入到dto中
-                    importSuperMemberType(entity, metaMember, context);
-
-                    printConstraintAnnotation(entity, propertyName, dtoSpec, pw);
-                    pw.println(writeApiModelPropertyAnnotation(entity, propertyName, dtoSpec));
-                    pw.println("	" + metaMember.getAttributeDeclarationString());
-                    printedEntityPropNames.add(propertyName);
+                DtoProp dtoProp = propertyMap.get(propertyName);
+                if (dtoProp == null) {
+                    continue;
                 }
+                if ("id".equals(propertyName)) {
+                    continue;
+                }
+                //将superClass中成员类型导入到dto中
+                importSuperMemberType(entity, metaMember, context);
+
+                printConstraintAnnotation(entity, dtoProp, pw);
+                pw.println(writeApiModelPropertyAnnotation(entity, dtoProp));
+                pw.println("	" + metaMember.getAttributeDeclarationString());
+                printedEntityPropNames.add(propertyName);
             }
 
             printDtoExtraProperties(entity, dtoSpec, pw, context);
@@ -258,14 +261,9 @@ public final class ClassWriter {
             if (typeImports.isEmpty()) {
                 continue;
             }
-            String propName = extra.getPropName();
 
-            //额外属性不在初始化的propertyMap中, 需要构造一个临时的存放额外属性
-            DtoSpec tmpDtoSpec = new DtoSpec("");
-            tmpDtoSpec.getPropertyMap().put(propName, extra);
-
-            printConstraintAnnotation(entity, propName, tmpDtoSpec, pw);
-            pw.println(writeApiModelPropertyAnnotation(entity, propName, tmpDtoSpec));
+            printConstraintAnnotation(entity, extra, pw);
+            pw.println(writeApiModelPropertyAnnotation(entity, extra));
 
             String typeDeclare = extra.getTypeDeclare();
             if (StringUtil.isBlank(typeDeclare)) {
@@ -276,7 +274,7 @@ public final class ClassWriter {
                     context.importDirtType(entity, typeImport);
                 }
             }
-            pw.println("	private " + typeDeclare + " " + propName + ";");
+            pw.println("	private " + typeDeclare + " " + extra.getPropName() + ";");
         }
     }
 
@@ -517,26 +515,16 @@ public final class ClassWriter {
                 + "(\"" + descr + "\")";
     }
 
-    private static String writeApiModelPropertyAnnotation(MetaEntity entity, String propertyName, DtoSpec dtoSpec) {
-        Map<String, DtoProp> propertyMap = dtoSpec.getPropertyMap();
-        DtoProp property = propertyMap.get(propertyName);
-        if (property == null) {
-            throw new RuntimeException("property is null when writeApiModelPropertyAnnotation");
-        }
-        String descr = property.getDescr();
+    private static String writeApiModelPropertyAnnotation(MetaEntity entity, DtoProp dtoProp) {
+        String descr = dtoProp.getDescr();
         if (StringUtil.isBlank(descr)) {
-            descr = propertyName;
+            descr = dtoProp.getPropName();
         }
         return "	@" + entity.importType("io.swagger.annotations.ApiModelProperty")
                 + "(\"" + descr + "\")";
     }
 
-    private static void printConstraintAnnotation(MetaEntity entity, String propertyName, DtoSpec dtoSpec, PrintWriter pw) {
-        Map<String, DtoProp> propertyMap = dtoSpec.getPropertyMap();
-        DtoProp property = propertyMap.get(propertyName);
-        if (property == null) {
-            throw new RuntimeException("property is null when printConstraintAnnotation");
-        }
+    private static void printConstraintAnnotation(MetaEntity entity, DtoProp property, PrintWriter pw) {
         Set<Rule_> ruleSet = new HashSet<>();
         for (Rule rule : property.getRules()) {
             //注解去重

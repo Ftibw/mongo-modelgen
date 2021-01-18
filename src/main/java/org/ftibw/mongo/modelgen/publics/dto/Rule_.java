@@ -38,6 +38,13 @@ public enum Rule_ {
     Range("org.hibernate.validator.constraints.Range", new String[]{"min", "max"});
 
     /**
+     * 非标准的正则表达式字符串：写入文件时，如果存在转义符\则每个转义符\本身也需要转义
+     */
+    public static final String REGEX_DAY_TIME = "^[0-2][0-9]:[0-5][0-9]$";
+    public static final String REGEX_PHONE_NUMBER = "^1[345789]\\\\d{9}$";
+    public static final String REGEX_BASE64_STRING = "^data:.*;base64,.*$";
+
+    /**
      * 注解完全限定名
      */
     private String type;
