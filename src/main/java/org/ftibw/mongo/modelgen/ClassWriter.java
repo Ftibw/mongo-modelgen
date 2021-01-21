@@ -179,6 +179,8 @@ public final class ClassWriter {
 
             pw.println(writeApiModelAnnotation(entity, dtoSpec));
 
+            printEqualsAndHashCodeAnnotation(entity, dtoSpec, pw);
+
             pw.println(writeGetterSetterAnnotation(entity));
 
             printClassDeclarationDto(entity, pw, dtoSpec);
@@ -199,6 +201,7 @@ public final class ClassWriter {
                     //将superClass中成员类型导入到dto中
                     importSuperMemberType(entity, metaMember, context);
 
+                    printEqualsAndHashCodeIncludeAnnotation(dtoProp, pw);
                     printConstraintAnnotation(entity, dtoProp, pw);
                     pw.println(writeApiModelPropertyAnnotation(entity, dtoProp));
                     pw.println("	" + metaMember.getAttributeDeclarationString());
@@ -214,6 +217,7 @@ public final class ClassWriter {
                 if (dtoProp == null) {
                     continue;
                 }
+                printEqualsAndHashCodeIncludeAnnotation(dtoProp, pw);
                 printConstraintAnnotation(entity, dtoProp, pw);
                 pw.println(writeApiModelPropertyAnnotation(entity, dtoProp));
                 pw.println("	" + metaMember.getAttributeDeclarationString());
@@ -233,6 +237,7 @@ public final class ClassWriter {
                 //将superClass中成员类型导入到dto中
                 importSuperMemberType(entity, metaMember, context);
 
+                printEqualsAndHashCodeIncludeAnnotation(dtoProp, pw);
                 printConstraintAnnotation(entity, dtoProp, pw);
                 pw.println(writeApiModelPropertyAnnotation(entity, dtoProp));
                 pw.println("	" + metaMember.getAttributeDeclarationString());
@@ -502,6 +507,12 @@ public final class ClassWriter {
 //        return "@" + entity.importType("javax.persistence.metamodel.StaticMetamodel") + "(" + entity.getSimpleName() + ".class)";
 //    }
 
+    private static void printEqualsAndHashCodeAnnotation(MetaEntity entity, DtoSpec dtoSpec, PrintWriter pw) {
+        if (dtoSpec.isOverrideEqualsAndHashCode()) {
+            pw.println("@" + entity.importType("lombok.EqualsAndHashCode") + "(doNotUseGetters = true, onlyExplicitlyIncluded = true)");
+        }
+    }
+
     private static String writeGetterSetterAnnotation(MetaEntity entity) {
         return "@" + entity.importType("lombok.Getter") + "\n@" + entity.importType("lombok.Setter");
     }
@@ -538,6 +549,12 @@ public final class ClassWriter {
             entity.importType(anno.getType());
 
             pw.println("	" + anno.getConstraintAnnotationDeclareString(rule));
+        }
+    }
+
+    private static void printEqualsAndHashCodeIncludeAnnotation(DtoProp property, PrintWriter pw) {
+        if (property.isHash()) {
+            pw.println("	@EqualsAndHashCode.Include");
         }
     }
 

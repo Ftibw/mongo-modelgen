@@ -39,7 +39,7 @@ public @interface Prop {
     Rule[] rule() default {};
 
     /**
-     * 重写hashCode和equals时是否参与计算
+     * 如果值为true则重写equals和hashCode方法
      */
     boolean hash() default false;
 }

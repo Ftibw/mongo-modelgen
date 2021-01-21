@@ -14,6 +14,9 @@ public class DtoProp {
     private String typeDeclare;
     private List<String> typeImports;
     private Rule[] rules;
+    /**
+     * override EqualsAndHashCode if true
+     */
     private boolean hash;
 
     public DtoProp(String propName, String descr) {

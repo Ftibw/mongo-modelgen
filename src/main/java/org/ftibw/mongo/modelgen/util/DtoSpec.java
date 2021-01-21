@@ -22,7 +22,7 @@ public class DtoSpec {
     private String namespace;
     private String descr;
     private Type type;
-
+    private boolean defaultEqualsAndHashCode;
     private Map<String, DtoProp> propertyMap = new HashMap<>();
     private List<DtoProp> extraProperties;
 
@@ -34,6 +34,7 @@ public class DtoSpec {
         this.namespace = namespace;
         this.descr = descr;
         this.type = type;
+        this.defaultEqualsAndHashCode = true;
     }
 
     public String getNamespace() {
@@ -58,6 +59,10 @@ public class DtoSpec {
 
     public static List<DtoSpec> getDtoSpecification(String qualifiedName) {
         return DTO_SPECIFICATIONS.get(qualifiedName);
+    }
+
+    public boolean isOverrideEqualsAndHashCode() {
+        return !defaultEqualsAndHashCode;
     }
 
     /**
@@ -163,8 +168,10 @@ public class DtoSpec {
                         propDescr = defaultProp.getDescr();
                     }
                 }
+                boolean overrideEqualsAndHashCode = prop.hash();
+                dtoSpec.defaultEqualsAndHashCode &= !overrideEqualsAndHashCode;
                 //只获取非默认属性的【校验规则】、【是否参与hashCode计算】
-                propertyMap.put(propName, new DtoProp(propName, propDescr, prop.rule(), prop.hash()));
+                propertyMap.put(propName, new DtoProp(propName, propDescr, prop.rule(), overrideEqualsAndHashCode));
             }
 
             Prop[] extraProps = spec.extra();
@@ -198,13 +205,15 @@ public class DtoSpec {
                 if (typeImports.size() > 1 && StringUtil.isBlank(typeDeclare)) {
                     continue;
                 }
+                boolean overrideEqualsAndHashCode = extraProp.hash();
+                dtoSpec.defaultEqualsAndHashCode &= !overrideEqualsAndHashCode;
                 extraProperties.add(new DtoProp(
                         propName,
                         extraProp.descr(),
                         typeDeclare,
                         typeImports,
                         extraProp.rule(),
-                        extraProp.hash()
+                        overrideEqualsAndHashCode
                 ));
             }
             if (extraProperties.size() > 0) {
