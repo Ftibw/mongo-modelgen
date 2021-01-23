@@ -14,14 +14,9 @@ import java.lang.annotation.*;
 @Repeatable(Spec.class)
 public @interface Prop {
     /**
-     * 属性名称
+     * [属性名称, 属性描述（空值时使用默认描述）]
      */
-    String value();
-
-    /**
-     * 属性描述，空值时使用默认描述
-     */
-    String descr() default "";
+    String[] value();
 
     /**
      * 作为扩展属性时，导入的类型，typeDeclare空值时，以type的第一个类型作为声明

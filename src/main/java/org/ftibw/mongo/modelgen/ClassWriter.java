@@ -536,19 +536,15 @@ public final class ClassWriter {
     }
 
     private static void printConstraintAnnotation(MetaEntity entity, DtoProp property, PrintWriter pw) {
-        Set<Rule_> ruleSet = new HashSet<>();
+        Set<String> ruleSet = new HashSet<>();
         for (Rule rule : property.getRules()) {
             //注解去重
-            Rule_ ruleEnum = rule.value();
-            if (ruleSet.contains(ruleEnum)) {
+            String type = Rule_.getType(rule);
+            if (ruleSet.contains(type)) {
                 continue;
             }
-            ruleSet.add(ruleEnum);
-
-            Rule_ anno = rule.value();
-            entity.importType(anno.getType());
-
-            pw.println("	" + anno.getConstraintAnnotationDeclareString(rule));
+            ruleSet.add(type);
+            pw.println("	" + Rule_.getConstraintAnnotationDeclareString(entity.importType(type), rule));
         }
     }
 

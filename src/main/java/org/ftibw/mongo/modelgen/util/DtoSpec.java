@@ -91,8 +91,18 @@ public class DtoSpec {
                 propertyMap = new HashMap<>(props.length);
 
                 for (Prop prop : props) {
-                    String propName = prop.value();
-                    String descr = prop.descr();
+                    String propName;
+                    String descr = null;
+
+                    String[] value = prop.value();
+                    int len = value.length;
+                    if (len == 0) {
+                        continue;
+                    }
+                    propName = value[0];
+                    if (len > 1) {
+                        descr = value[1];
+                    }
                     propertyMap.put(propName, new DtoProp(propName, descr));
                 }
             }
@@ -113,8 +123,18 @@ public class DtoSpec {
         }
         //再添加当前类属性
         for (Prop prop : defaultSpec.value()) {
-            String propName = prop.value();
-            String descr = prop.descr();
+            String propName;
+            String descr = null;
+
+            String[] value = prop.value();
+            int len = value.length;
+            if (len == 0) {
+                continue;
+            }
+            propName = value[0];
+            if (len > 1) {
+                descr = value[1];
+            }
             propertyMap.put(propName, new DtoProp(propName, descr));
         }
         return dtoSpec;
@@ -159,8 +179,18 @@ public class DtoSpec {
             Map<String, DtoProp> propertyMap = dtoSpec.propertyMap;
             // DtoProp#descr非空，则覆盖已存在的属性描述
             for (Prop prop : spec.value()) {
-                String propName = prop.value();
-                String propDescr = prop.descr();
+                String propName;
+                String propDescr = null;
+
+                String[] value = prop.value();
+                int len = value.length;
+                if (len == 0) {
+                    continue;
+                }
+                propName = value[0];
+                if (len > 1) {
+                    propDescr = value[1];
+                }
 
                 if (StringUtil.isBlank(propDescr)) {
                     DtoProp defaultProp = defaultPropertyMap.get(propName);
@@ -178,7 +208,19 @@ public class DtoSpec {
             List<DtoProp> extraProperties = new ArrayList<>(extraProps.length);
             Set<String> extraPropNames = new HashSet<>(extraProps.length);
             for (Prop extraProp : extraProps) {
-                String propName = extraProp.value();
+                String propName;
+                String propDescr = null;
+
+                String[] value = extraProp.value();
+                int len = value.length;
+                if (len == 0) {
+                    continue;
+                }
+                propName = value[0];
+                if (len > 1) {
+                    propDescr = value[1];
+                }
+
                 if (propertyMap.containsKey(propName)) {
                     continue;
                 }
@@ -209,7 +251,7 @@ public class DtoSpec {
                 dtoSpec.defaultEqualsAndHashCode &= !overrideEqualsAndHashCode;
                 extraProperties.add(new DtoProp(
                         propName,
-                        extraProp.descr(),
+                        propDescr,
                         typeDeclare,
                         typeImports,
                         extraProp.rule(),

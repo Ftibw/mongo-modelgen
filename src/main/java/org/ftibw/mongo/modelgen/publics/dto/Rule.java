@@ -13,18 +13,13 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.SOURCE)
 public @interface Rule {
     /**
-     * 属性名称
+     * [
+     * 约束注解名称,
+     * 校验失败后的提示语,
+     * 支持的注解选项值
+     * ]
+     * 多个选项值逗号拼接且与{@link Rule_#CONSTRAINT_SUPPORTED_OPTIONS}顺序匹配
      */
-    Rule_ value();
-
-    /**
-     * 用于生成支持的注解选项值，选项值与{@link Rule_#supportedOptions}顺序匹配。
-     */
-    String[] optVal() default {};
-
-    /**
-     * 用于生成 message 注解选项
-     */
-    String msg() default "";
+    String[] value();
 
 }
